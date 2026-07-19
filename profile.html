@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ZeusV2 — Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --white: #ffffff;
+    --green: #22c55e;
+    --green-soft: #4ade80;
+    --muted: rgba(255,255,255,0.5);
+    --error: #ff6b6b;
+    --warning: #ffb86b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #1c231d; color: var(--white);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    overflow-x: hidden;
+    opacity: 0; animation: pageFade 0.6s ease forwards;
+  }
+  @keyframes pageFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  ::selection { background: rgba(34,197,94,0.3); color: #fff; }
+  :focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+  .bg-img {
+    position: fixed; inset: 0; z-index: 0;
+    background: url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920&q=80') center/cover no-repeat;
+    transform: scale(1.1);
+  }
+  .bg-img::after { content: ''; position: absolute; inset: 0; background: rgba(10,26,15,0.8); }
+  .bg-vignette {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 20%, rgba(10,26,15,0.85) 100%);
+  }
+
+  .wrap {
+    position: relative; z-index: 2;
+    width: 100%; max-width: 500px; padding: 24px;
+  }
+
+  .card {
+    padding: 48px 40px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    position: relative;
+    opacity: 0; transform: translateY(20px); animation: cardUp 0.7s 0.15s ease forwards;
+  }
+  @keyframes cardUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card::before {
+    content: ''; position: absolute; inset: 0; border-radius: 20px; padding: 1px; pointer-events: none;
+    background: linear-gradient(160deg, rgba(255,255,255,0.15), transparent 50%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+
+  .profile-head { display: flex; align-items: center; gap: 18px; margin-bottom: 32px; }
+  .avatar-label { position: relative; cursor: pointer; display: block; }
+  .avatar {
+    width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    box-shadow: 0 0 24px rgba(34,197,94,0.3);
+    transition: opacity 0.3s;
+  }
+  .avatar-label:hover .avatar { opacity: 0.6; }
+  .avatar-edit {
+    position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+    font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+    background: rgba(20,26,22,0.85); color: var(--white); padding: 2px 7px; border-radius: 50px;
+    border: 1px solid rgba(255,255,255,0.2); white-space: nowrap;
+  }
+  .profile-head .name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .profile-head .role { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  .info-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .info-row:last-of-type { border-bottom: none; }
+  .info-row .label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .info-row .value { font-weight: 600; font-size: 15px; text-align: right; word-break: break-all; }
+  .info-row .value.mono { font-family: 'JetBrains Mono', monospace; }
+
+  .badge {
+    display: inline-block; padding: 5px 14px; border-radius: 50px; font-size: 12px;
+    font-weight: 700; letter-spacing: 0.5px;
+  }
+  .badge.active { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .badge.none { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid rgba(255,255,255,0.08); }
+  .badge.frozen { background: rgba(255,184,107,0.1); color: var(--warning); border: 1px solid rgba(255,184,107,0.3); }
+
+.action-btn {
+    width: 100%; margin-top: 14px; padding: 14px; border-radius: 50px;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.06);
+    color: var(--white);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background 0.3s, border-color 0.3s, transform 0.3s;
+}
+.action-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.4);
+}
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.action-btn.unfrozen { border-color: rgba(34,197,94,0.6); color: var(--green); }
+.action-btn.download {
+    margin-top: 14px;
+    border: 2px solid rgba(34,197,94,0.5);
+    background: linear-gradient(135deg, rgba(34,197,94,0.9), rgba(74,222,128,0.85));
+    color: #04130c; font-weight: 800;
+}
+.action-btn.download:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(34,197,94,0.4);
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.4);
+    color: var(--white);
+}
+.action-btn.logout {
+    margin-top: 20px;
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.2);
+    color: var(--white);
+}
+.action-btn.logout:hover:not(:disabled) {
+    background: rgba(255,107,107,0.15);
+    border-color: rgba(255,107,107,0.5);
+    color: #ff6b6b;
+    box-shadow: 0 12px 35px rgba(255,107,107,0.3);
+}
+.action-btn.loading { color: transparent !important; pointer-events: none; }
+.action-btn.loading::after {
+    content: ''; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px;
+    margin: -10px 0 0 -10px; border: 2px solid #04130c; border-right-color: transparent;
+    border-radius: 50%; animation: spin 0.6s linear infinite;
+}
+
+  .msg { margin-top: 14px; font-size: 13px; min-height: 18px; text-align: center; color: var(--muted); }
+
+  .back-link {
+    display: block; text-align: center; margin-top: 20px;
+    color: var(--muted); font-size: 13px; text-decoration: none;
+    transition: color 0.25s;
+  }
+  .back-link:hover { color: var(--white); }
+
+  /* Nav */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(10,26,15,0.85);
+    backdrop-filter: blur(20px) saturate(160%);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-brand {
+    font-size: 16px; font-weight: 800; letter-spacing: 2px; color: var(--white);
+    text-decoration: none; text-shadow: 0 0 16px rgba(34,197,94,0.4);
+  }
+  .nav-links { display: flex; gap: 8px; align-items: center; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.5px; padding: 8px 16px; border-radius: 50px;
+    transition: color 0.25s, background 0.25s;
+  }
+  .nav-links a:hover { color: var(--white); background: rgba(255,255,255,0.08); }
+  .nav-links a.active {
+    color: #04130c; background: linear-gradient(135deg, var(--green), var(--green-soft));
+  }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 1000;
+    padding: 14px 22px; border-radius: 12px; font-size: 14px; font-weight: 600;
+    background: rgba(255,255,255,0.08); backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    transform: translateX(120%); opacity: 0; transition: transform 0.3s, opacity 0.3s;
+  }
+  .toast.show { transform: translateX(0); opacity: 1; }
+  .toast-ok { color: var(--green); border-color: rgba(34,197,94,0.4); }
+  .toast-warn { color: var(--warning); border-color: rgba(255,184,107,0.4); }
+  .toast-error { color: var(--error); border-color: rgba(255,107,107,0.4); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .card { padding: 36px 28px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-img"></div>
+<div class="bg-vignette"></div>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">ZEUSV2</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    
+    <a href="index.html#showcase">Showcase</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="account.html">Account</a>
+    <a href="profile.html" class="active">Profile</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <div class="card">
+    <div class="profile-head">
+      <label class="avatar-label" title="Click to change avatar">
+        <img class="avatar" id="avatarImg" src="pfp.jpg" alt="Avatar" />
+        <span class="avatar-edit">Change</span>
+        <input type="file" id="avatarInput" accept="image/*" hidden />
+      </label>
+      <div>
+        <div class="name" id="displayName">—</div>
+        <div class="role">ZeusV2 Member</div>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <span class="label">Username</span>
+      <span class="value" id="outUsername">—</span>
+    </div>
+    <div class="info-row">
+      <span class="label">UID</span>
+      <span class="value mono" id="outUid">—</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Subscription</span>
+      <span class="value"><span class="badge none" id="outSub">No active plan</span></span>
+    </div>
+
+    <button type="button" class="action-btn" id="downloadBtn" style="display:none;">Download</button>
+    <button type="button" class="action-btn" id="freezeBtn" disabled>Freeze Subscription</button>
+    <button type="button" class="action-btn" id="cancelBtn" disabled>Cancel Subscription</button>
+    <button type="button" class="action-btn logout" id="logoutBtn">Log Out</button>
+    <div class="msg" id="msg"></div>
+  </div>
+  <a href="index.html" class="back-link">Back to Home</a>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  function toast(msg, type) {
+    const el = document.createElement('div');
+    el.className = 'toast toast-' + type; el.textContent = msg;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 3000);
+  }
+
+  const session = localStorage.getItem('zeus-session') || sessionStorage.getItem('zeus-session');
+  const accounts = JSON.parse(localStorage.getItem('zeus-accounts') || '[]');
+  const acc = accounts.find(a => a.username === session || a.email === session);
+  const msg = document.getElementById('msg');
+  const subEl = document.getElementById('outSub');
+  const freezeBtn = document.getElementById('freezeBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+
+  function renderSub() {
+    const sub = acc?.subscription;
+    const frozen = acc?.frozen === true;
+    const has = sub && sub !== 'none' && sub !== '';
+    if (!has) {
+      subEl.className = 'badge none'; subEl.textContent = 'No active plan';
+      freezeBtn.disabled = true; cancelBtn.disabled = true;
+      freezeBtn.textContent = 'Freeze Subscription';
+      freezeBtn.classList.remove('unfrozen');
+      downloadBtn.style.display = 'none';
+      return;
+    }
+    freezeBtn.disabled = false; cancelBtn.disabled = false;
+    downloadBtn.style.display = 'block';
+    if (frozen) {
+      subEl.className = 'badge frozen'; subEl.textContent = 'Frozen (' + sub + ')';
+      freezeBtn.textContent = 'Unfreeze Subscription'; freezeBtn.classList.add('unfrozen');
+    } else {
+      subEl.className = 'badge active'; subEl.textContent = sub;
+      freezeBtn.textContent = 'Freeze Subscription'; freezeBtn.classList.remove('unfrozen');
+    }
+  }
+
+  if (!acc) {
+    msg.textContent = 'Not signed in. Redirecting…';
+    setTimeout(() => { window.location.href = 'account.html'; }, 1000);
+  } else {
+    const u = acc.username || acc.email;
+    document.getElementById('displayName').textContent = u;
+    document.getElementById('outUsername').textContent = u;
+    document.getElementById('outUid').textContent = acc.uid || '—';
+    if (acc.avatar) document.getElementById('avatarImg').src = acc.avatar;
+    renderSub();
+  }
+
+  const avatarInput = document.getElementById('avatarInput');
+  const avatarImg = document.getElementById('avatarImg');
+  avatarInput.addEventListener('change', () => {
+    const file = avatarInput.files && avatarInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      avatarImg.src = dataUrl;
+      const idx = accounts.findIndex(a => a.username === acc.username || a.email === acc.email);
+      if (idx !== -1) {
+        accounts[idx].avatar = dataUrl;
+        localStorage.setItem('zeus-accounts', JSON.stringify(accounts));
+        acc.avatar = dataUrl;
+      }
+      toast('Avatar updated', 'ok');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  freezeBtn.addEventListener('click', () => {
+    if (!acc?.subscription || acc.subscription === 'none') { toast('No active subscription', 'warn'); return; }
+    acc.frozen = !acc.frozen;
+    localStorage.setItem('zeus-accounts', JSON.stringify(accounts));
+    renderSub();
+    toast(acc.frozen ? 'Subscription frozen' : 'Subscription unfrozen', acc.frozen ? 'warn' : 'ok');
+    msg.textContent = acc.frozen ? 'Time paused.' : 'Resumed: ' + acc.subscription + '.';
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    if (!acc?.subscription || acc.subscription === 'none') { toast('No active subscription', 'warn'); return; }
+    if (!confirm('Cancel ' + acc.subscription + '?')) return;
+    acc.subscription = 'none'; acc.frozen = false;
+    localStorage.setItem('zeus-accounts', JSON.stringify(accounts));
+    renderSub(); toast('Subscription cancelled', 'warn');
+    msg.textContent = 'Cancelled.';
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    if (!confirm('Sign out?')) return;
+    localStorage.removeItem('zeus-session');
+    sessionStorage.removeItem('zeus-session');
+    window.location.href = 'account.html';
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    if (!acc?.subscription || acc.subscription === 'none') { toast('No active subscription', 'warn'); return; }
+    const content = 'ZeusV2 — License\nUser: ' + (acc.username || acc.email) + '\nUID: ' + (acc.uid || '—') + '\nPlan: ' + acc.subscription + '\n';
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'text.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('Downloaded text.txt', 'ok');
+  });
+})();
+</script>
+</body>
+</html>
